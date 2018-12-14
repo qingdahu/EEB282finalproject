@@ -70,11 +70,33 @@ tophat -p 32 -G $GENEGTF -o $TEMP/C1_R3_thout $GENOME $DATA/GSM794485_C1_R3_1.fq
 tophat -p 10 -G $GENEGTF -o $TEMP/C2_R1_thout $GENOME $DATA/GSM794486_C2_R1_1.fq $DATA/GSM794486_C2_R1_2.fq &
 tophat -p 10 -G $GENEGTF -o $TEMP/C2_R2_thout $GENOME $DATA/GSM794487_C2_R2_1.fq $DATA/GSM794487_C2_R2_2.fq &
 tophat -p 10 -G $GENEGTF -o $TEMP/C2_R3_thout $GENOME $DATA/GSM794488_C2_R3_1.fq $DATA/GSM794488_C2_R3_2.fq &
+# in fact all 3 of these together only took 1hr 09 mins  so more than 3 times faster.
+```
+If I was redoing this part I would do:
+
+```
+qrsh -q bio -pe openmp 48
+
+module load samtools/0.1.18 
+module load bowtie/0.12.7
+module load tophat/1.4.0 
+module load cufflinks/2.2.1 
+
+GENOME="/pub/$USER/finalproject/data/Drosophila_melanogaster/Ensembl/BDGP5/Sequence/BowtieIndex/genome"
+GENEGTF="/pub/$USER/finalproject/data/Drosophila_melanogaster/Ensembl/BDGP5/Annotation/Genes/genes.gtf"
+DATA="/pub/$USER/finalproject/data/paperdata"
+TEMP="/pub/$USER/finalproject/temp"
+
+tophat -p 8 -G $GENEGTF -o $TEMP/C1_R1_thout $GENOME $DATA/GSM794483_C1_R1_1.fq $DATA/GSM794483_C1_R1_2.fq &
+tophat -p 8 -G $GENEGTF -o $TEMP/C1_R2_thout $GENOME $DATA/GSM794484_C1_R2_1.fq $DATA/GSM794484_C1_R2_2.fq &
+tophat -p 8 -G $GENEGTF -o $TEMP/C1_R3_thout $GENOME $DATA/GSM794485_C1_R3_1.fq $DATA/GSM794485_C1_R3_2.fq &
+tophat -p 8 -G $GENEGTF -o $TEMP/C2_R1_thout $GENOME $DATA/GSM794486_C2_R1_1.fq $DATA/GSM794486_C2_R1_2.fq &
+tophat -p 8 -G $GENEGTF -o $TEMP/C2_R2_thout $GENOME $DATA/GSM794487_C2_R2_1.fq $DATA/GSM794487_C2_R2_2.fq &
+tophat -p 8 -G $GENEGTF -o $TEMP/C2_R3_thout $GENOME $DATA/GSM794488_C2_R3_1.fq $DATA/GSM794488_C2_R3_2.fq &
+```
 
 
-# in fact these were faster 1hr 09 mins each so more than 3 times faster.
-
-
+```
 cufflinks -p 8 -o $TEMP/C1_R1_clout $TEMP/C1_R1_thout/accepted_hits.bam &
 cufflinks -p 8 -o $TEMP/C1_R2_clout $TEMP/C1_R2_thout/accepted_hits.bam &
 cufflinks -p 8 -o $TEMP/C1_R3_clout $TEMP/C1_R3_thout/accepted_hits.bam &
@@ -83,7 +105,9 @@ cufflinks -p 8 -o $TEMP/C2_R2_clout $TEMP/C2_R2_thout/accepted_hits.bam &
 cufflinks -p 8 -o $TEMP/C2_R3_clout $TEMP/C2_R3_thout/accepted_hits.bam &
 
 
-
+exit
+# the rest only needs 8 cores or less
+qrsh -q class -pe openmp 8
 
 cd $TEMP
 cuffmerge -g $GENEGTF -s $GENOME.fa -p 8 $TEMP/assemblies.txt
@@ -129,6 +153,8 @@ dev.off()
 
 I am not sure why but my density and volcano plot look very different from the results in the paper. See folder output. I used a different igenome and different versions of the software which might have caused this or there was a mistake in my analysis. 
 
+It was very interesting comparing the speed of running programs with more cores and that it doesn't always run faster. Parallelizing the code manually accelerates the run much more. 
+
 
 
 
@@ -147,7 +173,11 @@ I am not sure why but my density and volcano plot look very different from the r
 
 Here is how I am processing data from 'https://trace.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?study=DRP003328'. I don't have enough time to do all the runs as I did not realize how big data sets can get. I will add the results when I get them but it will be after the deadline of this project. However, I think it would still be valuable for my own learning to continue this. 
 
-Prepare assembly2.txt in a
+Prepare assembly2.txt in advance
+```
+touch TEMP/assembly2.txt 
+vim TEMP/assembly2.txt #add following lines into file
+```
 
 ```
 /pub/qingdah/finalproject/temp/DRR055272_thout/transcripts.gtf
@@ -175,7 +205,8 @@ fastq-dump -F --gzip --split-files DRR055275 2>/dev/null &
 
 
 # going to a multicpu interactive session will probably help from here on out
-# qrsh -q bio -pe openmp 32
+exit
+qrsh -q bio -pe openmp 32
 # I found it better to not use suspend-able nodes
 
 
@@ -191,26 +222,25 @@ DATA="/pub/$USER/finalproject/data/compressed"
 TEMP="/pub/$USER/finalproject/temp"
 
 # Map the reads for each sample to the reference genome:
-tophat -p 8 -G $GENEGTF -o $TEMP/DRR055272_thout $GENOME $DATA/DRR055272_1.fastq $DATA/DRR055272_2.fastq
-tophat -p 8 -G $GENEGTF -o $TEMP/DRR055273_thout $GENOME $DATA/DRR055273_1.fastq $DATA/DRR055273_2.fastq
-tophat -p 8 -G $GENEGTF -o $TEMP/DRR055274_thout $GENOME $DATA/DRR055274_1.fastq $DATA/DRR055274_2.fastq
-tophat -p 8 -G $GENEGTF -o $TEMP/DRR055275_thout $GENOME $DATA/DRR055275_1.fastq $DATA/DRR055275_2.fastq
+tophat -p 8 -G $GENEGTF -o $TEMP/DRR055272_thout $GENOME $DATA/DRR055272_1.fastq $DATA/DRR055272_2.fastq &
+tophat -p 8 -G $GENEGTF -o $TEMP/DRR055273_thout $GENOME $DATA/DRR055273_1.fastq $DATA/DRR055273_2.fastq &
+tophat -p 8 -G $GENEGTF -o $TEMP/DRR055274_thout $GENOME $DATA/DRR055274_1.fastq $DATA/DRR055274_2.fastq &
+tophat -p 8 -G $GENEGTF -o $TEMP/DRR055275_thout $GENOME $DATA/DRR055275_1.fastq $DATA/DRR055275_2.fastq &
 # Assemble transcripts for each sample:
-cufflinks -p 8 -o $TEMP/DRR055272_chout $TEMP/DRR055272_thout/accepted_hits.bam
-cufflinks -p 8 -o $TEMP/DRR055273_chout $TEMP/DRR055273_thout/accepted_hits.bam
-cufflinks -p 8 -o $TEMP/DRR055274_chout $TEMP/DRR055274_thout/accepted_hits.bam
-cufflinks -p 8 -o $TEMP/DRR055275_chout $TEMP/DRR055275_thout/accepted_hits.bam
+cufflinks -p 8 -o $TEMP/DRR055272_chout $TEMP/DRR055272_thout/accepted_hits.bam &
+cufflinks -p 8 -o $TEMP/DRR055273_chout $TEMP/DRR055273_thout/accepted_hits.bam &
+cufflinks -p 8 -o $TEMP/DRR055274_chout $TEMP/DRR055274_thout/accepted_hits.bam &
+cufflinks -p 8 -o $TEMP/DRR055275_chout $TEMP/DRR055275_thout/accepted_hits.bam &
 
-touch TEMP/assemblies.txt 
-vim TEMP/assemblies.txt #add following lines into file
 
+cd $TEMP
 
 # Run Cuffmerge on all your assemblies to create a single merged transcriptome annotation:
-cuffmerge -g $GENEGTF -s $GENOME.fa -p 8 $TEMP/assemblies.txt
-# can i get this to write to specific location?
+cuffmerge -g $GENEGTF -s $GENOME.fa -p 8 $TEMP/assembly2.txt
+
 
 # Run Cuffdiff by using the merged transcriptome assembly along with the BAM files from TopHat for each replicate:
-cuffdiff -o $TEMP/diff_out -b $GENOME.fa -p 8 -L C1,C2 -u merged_asm/merged.gtf \
+cuffdiff -o $TEMP/diff_out -b $GENOME.fa -p 8 -L male,female -u merged_asm/merged.gtf \
 $TEMP/DRR055272_thout/accepted_hits.bam,$TEMP/DRR055273_thout/accepted_hits.bam \
 $TEMP/DRR055274_thout/accepted_hits.bam,$TEMP/DRR055275_thout/accepted_hits.bam
 
@@ -250,6 +280,9 @@ dev.off()
 ## Thoughts about this project
 
 This was a very easy to follow set of instructions with the knowledge gained from devbio282. There were some useful tricks that were mentioned in class such as pushing tasks to background and piping stderr to dev/null. Experience with HPC modules made this pipeline much more streamlined. However, I was not use to handling the size of a real data set.
+
+
+
 
 
 
