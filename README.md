@@ -1,3 +1,5 @@
+
+
 # Final project for DevBio282
 
 Qingda Hu 
@@ -9,7 +11,20 @@ December 12, 2018
 RNA-seq data was obtained from publicly available resources and analyzed using a published pipeline. The goal of this project is for me to gain experience working with RNA-seq data which I will have to do for parts of my PhD research project. Pipeline was taken from 'https://www.nature.com/articles/nprot.2012.016' and data was taken from 'https://trace.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?study=DRP003328'
 
 
+prepare file 
+```
+touch $TEMP/assemblies.txt 
+vim $TEMP/assemblies.txt
+```
 
+```
+/pub/$USER/finalproject/temp/C1_R1_clout/transcripts.gtf
+/pub/$USER/finalproject/temp/C2_R2_clout/transcripts.gtf
+/pub/$USER/finalproject/temp/C1_R2_clout/transcripts.gtf
+/pub/$USER/finalproject/temp/C2_R1_clout/transcripts.gtf
+/pub/$USER/finalproject/temp/C1_R3_clout/transcripts.gtf
+/pub/$USER/finalproject/temp/C2_R3_clout/transcripts.gtf
+```
 
 ```
 #make some directories for the project
@@ -68,21 +83,10 @@ cufflinks -p 8 -o $TEMP/C2_R2_clout $TEMP/C2_R2_thout/accepted_hits.bam &
 cufflinks -p 8 -o $TEMP/C2_R3_clout $TEMP/C2_R3_thout/accepted_hits.bam &
 
 
-touch $TEMP/assemblies.txt 
-```
-
-/pub/$USER/finalproject/temp/C1_R1_clout/transcripts.gtf
-/pub/$USER/finalproject/temp/C2_R2_clout/transcripts.gtf
-/pub/$USER/finalproject/temp/C1_R2_clout/transcripts.gtf
-/pub/$USER/finalproject/temp/C2_R1_clout/transcripts.gtf
-/pub/$USER/finalproject/temp/C1_R3_clout/transcripts.gtf
-/pub/$USER/finalproject/temp/C2_R3_clout/transcripts.gtf
 
 
-```
 cd $TEMP
 cuffmerge -g $GENEGTF -s $GENOME.fa -p 8 $TEMP/assemblies.txt
-
 
 
 # Run Cuffdiff by using the merged transcriptome assembly along with the BAM files from TopHat for each replicate:
@@ -90,7 +94,7 @@ cuffdiff -o $TEMP/diff_out -b $GENOME.fa -p 8 -L C1,C2 -u $TEMP/merged_asm/merge
 $TEMP/C1_R1_thout/accepted_hits.bam,$TEMP/C1_R2_thout/accepted_hits.bam,$TEMP/C1_R3_thout/accepted_hits.bam \
 $TEMP/C2_R1_thout/accepted_hits.bam,$TEMP/C2_R3_thout/accepted_hits.bam,$TEMP/C2_R2_thout/accepted_hits.bam
 
-cp $TEMP/diff_out /pub/qingdah/finalproject/output/diff_out1
+cp -r $TEMP/diff_out /pub/qingdah/finalproject/output/diff_out1
 
 cd /pub/qingdah/finalproject/output
 
@@ -120,6 +124,9 @@ dev.off()
 
 ```
 
+
+
+
 I am not sure why but my density and volcano plot look very different from the results in the paper. See folder output. I used a different igenome and different versions of the software which might have caused this or there was a mistake in my analysis. 
 
 
@@ -128,12 +135,19 @@ I am not sure why but my density and volcano plot look very different from the r
 
 
 
+
+
+
+
+
+
+
 ## Tentative procedure for DRP003328
-NOTE: Currently running CUFFLINKS
+
 
 Here is how I am processing data from 'https://trace.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?study=DRP003328'. I don't have enough time to do all the runs as I did not realize how big data sets can get. I will add the results when I get them but it will be after the deadline of this project. However, I think it would still be valuable for my own learning to continue this. 
 
-Prepare assembly2.txt in advance
+Prepare assembly2.txt in a
 
 ```
 /pub/qingdah/finalproject/temp/DRR055272_thout/transcripts.gtf
@@ -200,7 +214,7 @@ cuffdiff -o $TEMP/diff_out -b $GENOME.fa -p 8 -L C1,C2 -u merged_asm/merged.gtf 
 $TEMP/DRR055272_thout/accepted_hits.bam,$TEMP/DRR055273_thout/accepted_hits.bam \
 $TEMP/DRR055274_thout/accepted_hits.bam,$TEMP/DRR055275_thout/accepted_hits.bam
 
-cp $TEMP/diff_out /pub/qingdah/finalproject/output/diff_out2
+cp -r $TEMP/diff_out /pub/qingdah/finalproject/output/diff_out2
 cd /pub/qingdah/finalproject/output
 module load R
 R
@@ -236,6 +250,13 @@ dev.off()
 ## Thoughts about this project
 
 This was a very easy to follow set of instructions with the knowledge gained from devbio282. There were some useful tricks that were mentioned in class such as pushing tasks to background and piping stderr to dev/null. Experience with HPC modules made this pipeline much more streamlined. However, I was not use to handling the size of a real data set.
+
+
+
+
+
+
+
 
 
 
